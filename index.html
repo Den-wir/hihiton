@@ -149,8 +149,8 @@
                   </div>
                   <div class="card__body">
                     <div class="field">
-                      <label class="label" for="patientName">Имя пациента</label>
-                      <input class="input" id="patientName" placeholder="Введите ваше ФИО" />
+                      <label class="label" for="patientName">ФИО</label>
+                      <input class="input" id="patientName" placeholder="Фамилия Имя Отчество" />
                     </div>
                     <div class="field">
                       <label class="label" for="specialtyName">Специальность</label>
@@ -211,14 +211,13 @@
               </article>
               <article class="card mt">
                 <div class="card__head">
-                  <div class="card__title">Результат приема</div>
+                  <div class="card__title">Протокол консультации</div>
+                  <div class="card__subtitle">Полный текст после завершения приёма врачом</div>
                 </div>
                 <div class="card__body">
                   <div class="status">
                     <div class="pill pill--good">Статус: доступен после сохранения врачом</div>
-                    <p class="p" id="patientResultDiagnosis">Диагноз: пока не заполнен.</p>
-                    <p class="p" id="patientResultRecommendations">Рекомендации: пока не заполнены.</p>
-                    <p class="p" id="patientResultNext">Следующий прием: не назначен.</p>
+                    <pre class="protocol-text" id="patientResultProtocol">Протокол пока не сформирован.</pre>
                   </div>
                 </div>
               </article>
@@ -241,39 +240,75 @@
           <div class="visit">
             <article class="card">
               <div class="card__head">
-                <div class="card__title">Сводка пациента</div>
+                <div class="card__title">Сводка и преданкета</div>
+                <div class="card__subtitle">Если пациент не заполнил анкету — дополните сами</div>
               </div>
               <div class="card__body">
                 <ul class="list">
                   <li id="visitSummaryName">ФИО: не выбрано</li>
                   <li id="visitSummaryDoctor">Врач: не выбрано</li>
                   <li id="visitSummarySlot">Время: не выбрано</li>
-                  <li id="visitSummaryAllergy">Аллергии и хронические болезни: нет данных</li>
-                  <li id="visitSummaryComplaint">Жалоба: нет данных</li>
                 </ul>
-                <div class="hint" id="visitSummaryHistory">Преданкета: нет данных.</div>
+                <div class="field mt">
+                  <label class="label" for="visitEditComplaint">Жалоба</label>
+                  <input class="input" id="visitEditComplaint" placeholder="То же, что в анкете пациента" />
+                </div>
+                <div class="field">
+                  <label class="label" for="visitEditHistory">Преданкета (как началось, течение)</label>
+                  <textarea class="input" id="visitEditHistory" placeholder="Пациент мог не заполнить — внесите при осмотре"></textarea>
+                </div>
+                <div class="field">
+                  <label class="label" for="visitEditAllergy">Аллергии и хронические заболевания</label>
+                  <input class="input" id="visitEditAllergy" placeholder="По словам пациента или из карты" />
+                </div>
               </div>
             </article>
             
             <article class="card">
               <div class="card__head">
-                <div class="card__title">Итог приема</div>
+                <div class="card__title">Протокол консультации</div>
+                <div class="card__subtitle">Осмотр и заключение (паспортные данные — только в тексте протокола)</div>
               </div>
               <div class="card__body">
+                <p class="p muted">Блок паспортных данных формируется автоматически в итоговом протоколе для пациента.</p>
+                <div class="two">
+                  <div class="field">
+                    <label class="label" for="visitPulse">Пульс (уд/мин)</label>
+                    <input class="input" id="visitPulse" inputmode="numeric" placeholder="Например: 72" />
+                  </div>
+                  <div class="field">
+                    <label class="label" for="visitBp">Давление (мм рт. ст.)</label>
+                    <input class="input" id="visitBp" placeholder="Например: 120/80" />
+                  </div>
+                </div>
+                <div class="two">
+                  <div class="field">
+                    <label class="label" for="visitTemp">Температура (°C)</label>
+                    <input class="input" id="visitTemp" placeholder="Например: 36.6" />
+                  </div>
+                  <div class="field">
+                    <label class="label" for="visitWeight">Вес (кг)</label>
+                    <input class="input" id="visitWeight" placeholder="По показаниям" />
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="label" for="visitObjective">Объективно (кратко)</label>
+                  <textarea class="input" id="visitObjective" placeholder="Состояние, аускультация, при необходимости"></textarea>
+                </div>
                 <div class="field">
                   <label class="label" for="visitDiagnosis">Диагноз</label>
                   <input class="input" id="visitDiagnosis" placeholder="Например: мигрень без ауры" />
                 </div>
                 <div class="field">
                   <label class="label" for="visitRecommendations">Рекомендации</label>
-                  <textarea class="input" id="visitRecommendations" placeholder="Назначения, режим, контроль..."></textarea>
+                  <textarea class="input" id="visitRecommendations" placeholder="Назначения, режим"></textarea>
                 </div>
                 <div class="field">
                   <label class="label" for="visitNext">Следующий прием</label>
                   <input class="input" id="visitNext" placeholder="Например: через 14 дней" />
                 </div>
-                <button class="btn btn--primary" id="saveVisitResult">Сохранить итог</button>
-                <div class="success hidden" id="visitResultSuccess">Итог приема сохранен и виден пациенту.</div>
+                <button class="btn btn--primary" id="saveVisitResult">Сохранить протокол</button>
+                <div class="success hidden" id="visitResultSuccess">Протокол сохранён. Пациенту отправлен полный текст.</div>
               </div>
             </article>
             
@@ -293,6 +328,7 @@
                   <button class="chip2 visit-template" data-template="template8">Поясничная боль</button>
                   <button class="chip2 visit-template" data-template="template9">Аллергический ринит</button>
                 </div>
+                <div class="quote mt hidden" id="visitTemplateText"></div>
               </div>
             </article>
           </div>
