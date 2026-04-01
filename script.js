@@ -20,13 +20,16 @@ const doctorQueueEmpty = document.getElementById("doctorQueueEmpty");
 const patientQueueNumber = document.getElementById("patientQueueNumber");
 const patientQueueInfo = document.getElementById("patientQueueInfo");
 const patientQueueCabinet = document.getElementById("patientQueueCabinet");
-const patientResultDiagnosis = document.getElementById("patientResultDiagnosis");
-const patientResultRecommendations = document.getElementById("patientResultRecommendations");
-const patientResultNext = document.getElementById("patientResultNext");
+const patientResultProtocol = document.getElementById("patientResultProtocol");
 const visitModal = document.getElementById("visitModal");
 const closeVisitModal = document.getElementById("closeVisitModal");
 const saveVisitResult = document.getElementById("saveVisitResult");
 const visitResultSuccess = document.getElementById("visitResultSuccess");
+const visitPulse = document.getElementById("visitPulse");
+const visitBp = document.getElementById("visitBp");
+const visitTemp = document.getElementById("visitTemp");
+const visitWeight = document.getElementById("visitWeight");
+const visitObjective = document.getElementById("visitObjective");
 const visitDiagnosis = document.getElementById("visitDiagnosis");
 const visitRecommendations = document.getElementById("visitRecommendations");
 const visitNext = document.getElementById("visitNext");
@@ -34,9 +37,9 @@ const visitTemplateText = document.getElementById("visitTemplateText");
 const visitSummaryName = document.getElementById("visitSummaryName");
 const visitSummaryDoctor = document.getElementById("visitSummaryDoctor");
 const visitSummarySlot = document.getElementById("visitSummarySlot");
-const visitSummaryAllergy = document.getElementById("visitSummaryAllergy");
-const visitSummaryComplaint = document.getElementById("visitSummaryComplaint");
-const visitSummaryHistory = document.getElementById("visitSummaryHistory");
+const visitEditComplaint = document.getElementById("visitEditComplaint");
+const visitEditHistory = document.getElementById("visitEditHistory");
+const visitEditAllergy = document.getElementById("visitEditAllergy");
 
 let activeVisitId = null;
 const doctorsBySpecialty = {
@@ -220,10 +223,70 @@ function renderPatientQueueState() {
   }
 }
 
+function dash(v) {
+  const s = v == null ? "" : String(v).trim();
+  return s ? s : "—";
+}
+
+function passportBlock(item) {
+  const s = dash(item.passportSeries);
+  const n = dash(item.passportNumber);
+  const docLine =
+    s !== "—" || n !== "—"
+      ? `паспорт гражданина Российской Федерации, серия ${s}, номер ${n}`
+      : "—";
+  return `ПАСПОРТНЫЕ ДАННЫЕ
+Дата рождения: 27.07.2007 
+Документ, удостоверяющий личность: 12 34 123456
+Кем выдан: Петров Д.И
+Дата выдачи документа: 01.01.2001`;
+}
+
+function buildFullProtocol(item, form) {
+  return `ПРОТОКОЛ КОНСУЛЬТАЦИИ
+
+Пациент (ФИО): ${dash(item.name)}
+${passportBlock(item)}
+
+Время записи: ${dash(item.slot)}
+Врач: ${dash(item.doctor)}
+Кабинет: ${dash(item.cabinet)}
+
+Анамнез (из анкеты)
+Жалоба: ${dash(item.complaint)}
+Преданкета: ${dash(item.history)}
+Аллергии и сопутствующие: ${dash(item.allergy)}
+
+Осмотр
+Пульс: ${dash(form.pulse)} уд/мин
+Артериальное давление: ${dash(form.bp)} мм рт. ст.
+Температура: ${dash(form.temp)} °C
+Вес: ${dash(form.weight)} кг
+
+Объективно:
+${dash(form.objective)}
+
+Заключение
+Диагноз: ${dash(form.diagnosis)}
+Рекомендации: ${dash(form.recommendations)}
+Следующий приём: ${dash(form.nextVisit)}
+`.trim();
+}
+
+function resultToProtocolText(data) {
+  if (!data) return "";
+  if (data.fullProtocol) return data.fullProtocol;
+  return `ПРОТОКОЛ КОНСУЛЬТАЦИИ
+
+Диагноз: ${dash(data.diagnosis)}
+Рекомендации: ${dash(data.recommendations)}
+Следующий приём: ${dash(data.nextVisit)}
+`.trim();
+}
+
 function updatePatientResult(data) {
-  patientResultDiagnosis.textContent = `Диагноз: ${data?.diagnosis || "пока не заполнен."}`;
-  patientResultRecommendations.textContent = `Рекомендации: ${data?.recommendations || "пока не заполнены."}`;
-  patientResultNext.textContent = `Следующий прием: ${data?.nextVisit || "не назначен."}`;
+  const text = resultToProtocolText(data);
+  patientResultProtocol.textContent = text || "Протокол пока не сформирован.";
 }
 
 function renderPatientResult() {
@@ -247,13 +310,22 @@ function openVisit(id) {
   visitSummaryName.textContent = `ФИО: ${item.name}`;
   visitSummaryDoctor.textContent = `Врач: ${item.doctor}`;
   visitSummarySlot.textContent = `Время: ${item.slot || "не выбрано"}`;
-  visitSummaryAllergy.textContent = `Аллергии и хронические болезни: ${item.allergy || "не указаны"}`;
-  visitSummaryComplaint.textContent = `Жалоба: ${item.complaint || "не указана"}`;
-  visitSummaryHistory.textContent = `Преданкета: ${item.history || "не заполнена."}`;
+  visitEditComplaint.value = item.complaint || "";
+  visitEditHistory.value = item.history || "";
+  visitEditAllergy.value = item.allergy || "";
+  visitPulse.value = "";
+  visitBp.value = "";
+  visitTemp.value = "";
+  visitWeight.value = "";
+  visitObjective.value = "";
   visitDiagnosis.value = "";
   visitRecommendations.value = "";
   visitNext.value = "";
   visitResultSuccess.classList.add("hidden");
+  if (visitTemplateText) {
+    visitTemplateText.classList.add("hidden");
+    visitTemplateText.innerHTML = "";
+  }
   visitModal.classList.remove("hidden");
 }
 
@@ -327,7 +399,10 @@ function initVisitTemplates() {
       visitDiagnosis.value = template.diagnosis;
       visitRecommendations.value = template.recommendations;
       visitNext.value = template.nextVisit || "";
-      visitTemplateText.innerHTML = `<div class="quote__text"><strong>Диагноз:</strong> ${template.diagnosis}<br><strong>Рекомендации:</strong> ${template.recommendations}</div>`;
+      if (visitTemplateText) {
+        visitTemplateText.classList.remove("hidden");
+        visitTemplateText.innerHTML = `<div class="quote__text"><strong>Диагноз:</strong> ${template.diagnosis}<br><strong>Рекомендации:</strong> ${template.recommendations}<br><strong>Следующий приём:</strong> ${template.nextVisit || "—"}</div>`;
+      }
       document.querySelectorAll(".visit-template").forEach((item) => item.classList.remove("chip2--on"));
       button.classList.add("chip2--on");
     });
@@ -378,10 +453,24 @@ saveVisitResult.addEventListener("click", () => {
   const index = queue.findIndex((item) => item.id === activeVisitId);
   if (index === -1) return;
 
-  const payload = {
+  queue[index].complaint = visitEditComplaint.value.trim();
+  queue[index].history = visitEditHistory.value.trim();
+  queue[index].allergy = visitEditAllergy.value.trim();
+
+  const form = {
+    pulse: visitPulse.value.trim(),
+    bp: visitBp.value.trim(),
+    temp: visitTemp.value.trim(),
+    weight: visitWeight.value.trim(),
+    objective: visitObjective.value.trim(),
     diagnosis: visitDiagnosis.value.trim(),
     recommendations: visitRecommendations.value.trim(),
     nextVisit: visitNext.value.trim(),
+  };
+  const fullProtocol = buildFullProtocol(queue[index], form);
+  const payload = {
+    ...form,
+    fullProtocol,
   };
 
   queue[index].status = "done";
