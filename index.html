@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MedQueue - Вход по роли</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="roleModal" id="roleModal" aria-modal="true" role="dialog">
+      <div class="roleModal__card">
+        <div class="badge">Быстрый вход</div>
+        <h1 class="h1">Выберите роль</h1>
+        <p class="p">Без регистрации и логина. Нажмите кнопку и сразу откроется нужная страница.</p>
+        <div class="roleModal__actions">
+          <button class="btn btn--primary w" id="enterDoctor">Я врач</button>
+          <button class="btn btn--secondary w" id="enterPatient">Я пациент</button>
+        </div>
+      </div>
+    </div>
+
+    <header class="topbar">
+      <div class="topbar__inner">
+        <div class="brand">
+          <div class="brand__logo">M</div>
+          <div>
+            <div class="brand__title">MedQueue</div>
+            <div class="brand__subtitle">Очередь и прием пациентов</div>
+          </div>
+        </div>
+        <div class="row">
+          <button class="chip" id="switchDoctor">Я врач</button>
+          <button class="chip" id="switchPatient">Я пациент</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="container grid">
+      <section id="doctorPage" class="view">
+        <div class="panel">
+          <div class="panel__head">
+            <div>
+              <div class="panel__title">Кабинет врача</div>
+              <div class="panel__subtitle">Очередь, сводка пациента, итог приема и шаблоны</div>
+            </div>
+            <div class="tabs">
+              <button class="tab tab--active" data-tab="docQueue">Очередь</button>
+              
+            </div>
+          </div>
+
+          <div class="panel__body">
+            <div id="docQueue" class="view view--active">
+              <div class="table" id="doctorQueueList"></div>
+              <div class="hint" id="doctorQueueEmpty">Очередь пока пустая. Пациенты появятся после записи на прием.</div>
+            </div>
+
+            <div id="docSummary" class="view">
+              <div class="two">
+                <article class="card">
+                  <div class="card__head">
+                    <div class="card__title">Краткая сводка пациента</div>
+                  </div>
+                  <div class="card__body">
+                    <ul class="list">
+                      <li>ФИО: Косуха Денис</li>
+                      <li>Возраст: 21</li>
+                      <li>Аллергия: нет</li>
+                      <li>Хронические болезни: гастрит</li>
+                      <li>Причина визита: головная боль 3 дня</li>
+                    </ul>
+                  </div>
+                </article>
+                <article class="card">
+                  <div class="card__head">
+                    <div class="card__title">Преданкета пациента</div>
+                  </div>
+                  <div class="card__body">
+                    <p class="p">Сон 5-6 часов, стресс высокий, температура отсутствует, давление обычно 120/80.</p>
+                    <div class="hint">Эту сводку заполняет пациент при записи. Врач видит ее до начала приема.</div>
+                  </div>
+                </article>
+              </div>
+            </div>
+
+            <div id="docResult" class="view">
+              <article class="card">
+                <div class="card__head">
+                  <div class="card__title">Итог приема</div>
+                </div>
+                <div class="card__body">
+                  <div class="field">
+                    <label class="label" for="diagnosis">Диагноз</label>
+                    <input class="input" id="diagnosis" placeholder="Например: мигрень без ауры" />
+                  </div>
+                  <div class="field">
+                    <label class="label" for="recommendations">Рекомендации</label>
+                    <textarea class="input" id="recommendations" placeholder="Назначения, режим, контроль..."></textarea>
+                  </div>
+                  <div class="field">
+                    <label class="label" for="nextVisit">Следующий прием</label>
+                    <input class="input" id="nextVisit" placeholder="Например: через 14 дней" />
+                  </div>
+                  <button class="btn btn--primary" id="saveResult">Сохранить итог</button>
+                  <div class="success hidden" id="resultSuccess">Итог приема сохранен.</div>
+                </div>
+              </article>
+            </div>
+
+            <div id="docTemplates" class="view">
+              <article class="card">
+                <div class="card__head">
+                  <div class="card__title">Шаблоны по итогам приема</div>
+                </div>
+                <div class="card__body">
+                  <div class="chips">
+                    <button class="chip2" data-template="template1">ОРВИ (базовый)</button>
+                    <button class="chip2" data-template="template2">Гипертония (контроль)</button>
+                    <button class="chip2" data-template="template3">Гастрит (поддержка)</button>
+                  </div>
+                  <div class="quote mt" id="templateText">
+                    <div class="quote__text">Выберите шаблон, чтобы подставить текст в итог приема.</div>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="patientPage" class="view">
+        <div class="panel">
+          <div class="panel__head">
+            <div>
+              <div class="panel__title">Кабинет пациента</div>
+              <div class="panel__subtitle">Запись на прием, преданкета и просмотр очереди</div>
+            </div>
+            <div class="tabs">
+              <button class="tab tab--active" data-tab="patBooking">Запись на прием</button>
+              <button class="tab" data-tab="patQueue">Просмотр очереди</button>
+            </div>
+          </div>
+          <div class="panel__body">
+            <div id="patBooking" class="view view--active">
+              <div class="two">
+                <article class="card">
+                  <div class="card__head">
+                    <div class="card__title">Запись на прием</div>
+                  </div>
+                  <div class="card__body">
+                    <div class="field">
+                      <label class="label" for="patientName">ФИО</label>
+                      <input class="input" id="patientName" placeholder="Фамилия Имя Отчество" />
+                    </div>
+                    <div class="field">
+                      <label class="label" for="specialtyName">Специальность</label>
+                      <select class="input" id="specialtyName"></select>
+                    </div>
+                    <div class="field">
+                      <label class="label" for="doctorName">Врач</label>
+                      <select class="input" id="doctorName"></select>
+                    </div>
+                    <div class="field">
+                      <label class="label" for="visitDate">День приема</label>
+                      <select class="input" id="visitDate"></select>
+                    </div>
+                    <div class="field">
+                      <label class="label" for="visitTime">Время приема</label>
+                      <select class="input" id="visitTime"></select>
+                    </div>
+                  </div>
+                </article>
+
+                <article class="card">
+                  <div class="card__head">
+                    <div class="card__title">Преданкета (сводка для врача)</div>
+                  </div>
+                  <div class="card__body">
+                    <div class="field">
+                      <label class="label" for="complaint">Основная жалоба</label>
+                      <input class="input" id="complaint" placeholder="Что беспокоит?" />
+                    </div>
+                    <div class="field">
+                      <label class="label" for="history">Когда началось и как проходит</label>
+                      <textarea class="input" id="history"></textarea>
+                    </div>
+                    <div class="field">
+                      <label class="label" for="allergy">Аллергии и хронические болезни</label>
+                      <input class="input" id="allergy" placeholder="Если есть, укажите" />
+                    </div>
+                    <button class="btn btn--primary" id="bookVisit">Записаться и отправить анкету</button>
+                    <div class="success hidden" id="bookSuccess">Вы записаны. Преданкета отправлена врачу.</div>
+                  </div>
+                </article>
+              </div>
+            </div>
+
+            <div id="patQueue" class="view">
+              <article class="card">
+                <div class="card__head">
+                  <div class="card__title">Моя очередь</div>
+                </div>
+                <div class="card__body">
+                  <div class="status">
+                    <div class="pill pill--info" id="patientQueueNumber">Номер в очереди: -</div>
+                    <p class="p" id="patientQueueInfo">Вы еще не записаны в очередь.</p>
+                    <p class="p" id="patientQueueCabinet">Кабинет: -</p>
+                  </div>
+                  <div class="hint">Обновление очереди выполняется на этой странице без входа в аккаунт.</div>
+                </div>
+              </article>
+              <article class="card mt">
+                <div class="card__head">
+                  <div class="card__title">Протокол консультации</div>
+                  <div class="card__subtitle">Полный текст после завершения приёма врачом</div>
+                </div>
+                <div class="card__body">
+                  <div class="status">
+                    <div class="pill pill--good">Статус: доступен после сохранения врачом</div>
+                    <pre class="protocol-text" id="patientResultProtocol">Протокол пока не сформирован.</pre>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+    
+    <div class="visitModal hidden" id="visitModal" aria-modal="true" role="dialog">
+      <div class="visitModal__card">
+        <div class="panel__head">
+          <div>
+            <div class="panel__title">Прием пациента: одно окно</div>
+            <div class="panel__subtitle">Сводка, итог приема и шаблоны в одном месте</div>
+          </div>
+          <button class="btn" id="closeVisitModal">Закрыть</button>
+        </div>
+        <div class="panel__body">
+          <div class="visit">
+            <article class="card">
+              <div class="card__head">
+                <div class="card__title">Сводка и преданкета</div>
+                <div class="card__subtitle">Если пациент не заполнил анкету — дополните сами</div>
+              </div>
+              <div class="card__body">
+                <ul class="list">
+                  <li id="visitSummaryName">ФИО: не выбрано</li>
+                  <li id="visitSummaryDoctor">Врач: не выбрано</li>
+                  <li id="visitSummarySlot">Время: не выбрано</li>
+                </ul>
+                <div class="field mt">
+                  <label class="label" for="visitEditComplaint">Жалоба</label>
+                  <input class="input" id="visitEditComplaint" placeholder="То же, что в анкете пациента" />
+                </div>
+                <div class="field">
+                  <label class="label" for="visitEditHistory">Преданкета (как началось, течение)</label>
+                  <textarea class="input" id="visitEditHistory" placeholder="Пациент мог не заполнить — внесите при осмотре"></textarea>
+                </div>
+                <div class="field">
+                  <label class="label" for="visitEditAllergy">Аллергии и хронические заболевания</label>
+                  <input class="input" id="visitEditAllergy" placeholder="По словам пациента или из карты" />
+                </div>
+              </div>
+            </article>
+            
+            <article class="card">
+              <div class="card__head">
+                <div class="card__title">Протокол консультации</div>
+                <div class="card__subtitle">Осмотр и заключение (паспортные данные — только в тексте протокола)</div>
+              </div>
+              <div class="card__body">
+                <p class="p muted">Блок паспортных данных формируется автоматически в итоговом протоколе для пациента.</p>
+                <div class="two">
+                  <div class="field">
+                    <label class="label" for="visitPulse">Пульс (уд/мин)</label>
+                    <input class="input" id="visitPulse" inputmode="numeric" placeholder="Например: 72" />
+                  </div>
+                  <div class="field">
+                    <label class="label" for="visitBp">Давление (мм рт. ст.)</label>
+                    <input class="input" id="visitBp" placeholder="Например: 120/80" />
+                  </div>
+                </div>
+                <div class="two">
+                  <div class="field">
+                    <label class="label" for="visitTemp">Температура (°C)</label>
+                    <input class="input" id="visitTemp" placeholder="Например: 36.6" />
+                  </div>
+                  <div class="field">
+                    <label class="label" for="visitWeight">Вес (кг)</label>
+                    <input class="input" id="visitWeight" placeholder="По показаниям" />
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="label" for="visitObjective">Объективно (кратко)</label>
+                  <textarea class="input" id="visitObjective" placeholder="Состояние, аускультация, при необходимости"></textarea>
+                </div>
+                <div class="field">
+                  <label class="label" for="visitDiagnosis">Диагноз</label>
+                  <input class="input" id="visitDiagnosis" placeholder="Например: мигрень без ауры" />
+                </div>
+                <div class="field">
+                  <label class="label" for="visitRecommendations">Рекомендации</label>
+                  <textarea class="input" id="visitRecommendations" placeholder="Назначения, режим"></textarea>
+                </div>
+                <div class="field">
+                  <label class="label" for="visitNext">Следующий прием</label>
+                  <input class="input" id="visitNext" placeholder="Например: через 14 дней" />
+                </div>
+                <button class="btn btn--primary" id="saveVisitResult">Сохранить протокол</button>
+                <div class="success hidden" id="visitResultSuccess">Протокол сохранён. Пациенту отправлен полный текст.</div>
+              </div>
+            </article>
+            
+            <article class="card">
+              <div class="card__head">
+                <div class="card__title">Шаблоны итогов</div>
+              </div>
+              <div class="card__body">
+                <div class="chips">
+                  <button class="chip2 visit-template" data-template="template1">ОРВИ (базовый)</button>
+                  <button class="chip2 visit-template" data-template="template2">Гипертония (контроль)</button>
+                  <button class="chip2 visit-template" data-template="template3">Гастрит (поддержка)</button>
+                  <button class="chip2 visit-template" data-template="template4">Бронхит (острый)</button>
+                  <button class="chip2 visit-template" data-template="template5">Мигрень</button>
+                  <button class="chip2 visit-template" data-template="template6">Тонзиллит</button>
+                  <button class="chip2 visit-template" data-template="template7">Сахарный диабет 2 типа</button>
+                  <button class="chip2 visit-template" data-template="template8">Поясничная боль</button>
+                  <button class="chip2 visit-template" data-template="template9">Аллергический ринит</button>
+                </div>
+                <div class="quote mt hidden" id="visitTemplateText"></div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
