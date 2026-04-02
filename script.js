@@ -301,7 +301,7 @@ function initTabs() {
   const tabGroups = [
     {
       root: document.getElementById("doctorPage"),
-      tabs: ["docQueue", "docResult", "docTemplates", "docSummary"],
+      tabs: ["docQueue"],
     },
     {
       root: document.getElementById("patientPage"),
