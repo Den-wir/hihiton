@@ -10,6 +10,8 @@ const bookSuccess = document.getElementById("bookSuccess");
 const patientName = document.getElementById("patientName");
 const specialtyName = document.getElementById("specialtyName");
 const doctorName = document.getElementById("doctorName");
+const therapistVisitTypeWrap = document.getElementById("therapistVisitTypeWrap");
+const therapistVisitType = document.getElementById("therapistVisitType");
 const visitDate = document.getElementById("visitDate");
 const visitTime = document.getElementById("visitTime");
 const complaint = document.getElementById("complaint");
@@ -54,11 +56,7 @@ const roomsBySpecialty = {
   Невролог: "Кабинет 115",
   ЛОР: "Кабинет 221",
 };
-const timesByDay = {
-  Сегодня: ["10:00", "10:30", "11:00", "11:30"],
-  Завтра: ["12:00", "12:30", "13:00", "13:30"],
-  "Послезавтра": ["14:00", "14:30", "15:00", "15:30"],
-};
+const baseTimeSlots = ["10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30"];
 
 function renderDoctorsBySpecialty() {
   const specialty = specialtyName.value;
@@ -71,6 +69,16 @@ function renderDoctorsBySpecialty() {
     option.textContent = doctor;
     doctorName.appendChild(option);
   });
+  updateTherapistVisitType();
+  doctorName.dispatchEvent(new Event("change"));
+}
+
+function updateTherapistVisitType() {
+  const isTherapist = specialtyName.value === "Терапевт";
+  therapistVisitTypeWrap.classList.toggle("hidden", !isTherapist);
+  if (!isTherapist) {
+    therapistVisitType.value = "";
+  }
 }
 
 function initDoctorFilter() {
@@ -127,28 +135,48 @@ function initTabs() {
 }
 
 function initSlots() {
-  visitDate.innerHTML = "";
-  Object.keys(timesByDay).forEach((day) => {
-    const option = document.createElement("option");
-    option.value = day;
-    option.textContent = day;
-    visitDate.appendChild(option);
-  });
+  const today = new Date();
+  const dateStr = today.toISOString().split("T")[0];
+  visitDate.min = dateStr;
+  if (!visitDate.value) {
+    visitDate.value = dateStr;
+  }
 
   const renderTimesByDay = () => {
-    const day = visitDate.value;
-    const times = timesByDay[day] || [];
+    const date = visitDate.value;
+    const doctor = doctorName.value;
+    const occupiedTimes = new Set(
+      getQueue()
+        .filter((item) => item.visitDateIso === date && item.doctor === doctor)
+        .map((item) => item.visitTime)
+        .filter(Boolean)
+    );
+
     visitTime.innerHTML = "";
-    times.forEach((time) => {
+    const defaultOption = document.createElement("option");
+    defaultOption.value = "";
+    defaultOption.textContent = "Выберите время";
+    visitTime.appendChild(defaultOption);
+
+    baseTimeSlots.forEach((time) => {
       const option = document.createElement("option");
       option.value = time;
-      option.textContent = time;
+      option.textContent = occupiedTimes.has(time) ? `${time} (занято)` : time;
+      option.disabled = occupiedTimes.has(time);
       visitTime.appendChild(option);
     });
+
+    const firstFreeSlot = baseTimeSlots.find((time) => !occupiedTimes.has(time));
+    if (firstFreeSlot) {
+      visitTime.value = firstFreeSlot;
+    } else {
+      visitTime.value = "";
+    }
   };
 
   renderTimesByDay();
   visitDate.addEventListener("change", renderTimesByDay);
+  doctorName.addEventListener("change", renderTimesByDay);
 }
 
 function getQueue() {
@@ -173,7 +201,7 @@ function setCurrentPatientId(id) {
 
 function selectedSlot() {
   if (!visitDate.value || !visitTime.value) return "";
-  return `${visitDate.value}, ${visitTime.value}`;
+  return `${visitDate.value} ${visitTime.value}`;
 }
 
 function renderDoctorQueue() {
@@ -193,6 +221,7 @@ function renderDoctorQueue() {
       <div>
         <div class="rowItem__name">${item.name}</div>
         <div class="rowItem__meta">Жалоба: ${item.complaint || "не указана"}</div>
+        <div class="rowItem__meta">Тип приема: ${item.visitReason || "Стандартный прием"}</div>
       </div>
       <div class="pill pill--info">Номер: ${index + 1}</div>
       <div class="rowItem__meta">${item.slot || "время не выбрано"} · ${item.cabinet || "кабинет не назначен"}</div>
@@ -251,6 +280,7 @@ ${passportBlock(item)}
 Время записи: ${dash(item.slot)}
 Врач: ${dash(item.doctor)}
 Кабинет: ${dash(item.cabinet)}
+Тип приёма: ${dash(item.visitReason)}
 
 Анамнез (из анкеты)
 Жалоба: ${dash(item.complaint)}
@@ -422,13 +452,44 @@ bookVisit.addEventListener("click", () => {
     return;
   }
 
+  if (!visitDate.value || !visitTime.value) {
+    bookSuccess.classList.remove("hidden");
+    bookSuccess.textContent = "Выберите дату и свободное время приема.";
+    return;
+  }
+  if (specialtyName.value === "Терапевт" && !therapistVisitType.value) {
+    bookSuccess.classList.remove("hidden");
+    bookSuccess.textContent = "Для терапевта выберите тип приема.";
+    return;
+  }
+
   const queue = getQueue();
+  const isOccupied = queue.some(
+    (item) =>
+      item.visitDateIso === visitDate.value &&
+      item.visitTime === visitTime.value &&
+      item.doctor === doctorName.value
+  );
+  if (isOccupied) {
+    bookSuccess.classList.remove("hidden");
+    bookSuccess.textContent = "Это время уже занято. Выберите другой слот.";
+    visitDate.dispatchEvent(new Event("change"));
+    return;
+  }
+
   const id = `p_${Date.now()}`;
+  const visitReasonText =
+    specialtyName.value === "Терапевт"
+      ? therapistVisitType.options[therapistVisitType.selectedIndex].textContent
+      : "Стандартный прием";
   const entry = {
     id,
     name: nameValue,
     doctor: doctorName.value,
     slot: selectedSlot(),
+    visitDateIso: visitDate.value,
+    visitTime: visitTime.value,
+    visitReason: visitReasonText,
     cabinet: roomsBySpecialty[specialtyName.value] || "Кабинет не назначен",
     complaint: complaint.value.trim(),
     history: history.value.trim(),
@@ -444,6 +505,7 @@ bookVisit.addEventListener("click", () => {
   renderDoctorQueue();
   renderPatientQueueState();
   renderPatientResult();
+  visitDate.dispatchEvent(new Event("change"));
 });
 
 saveVisitResult.addEventListener("click", () => {
