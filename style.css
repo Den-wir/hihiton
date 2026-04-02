@@ -358,6 +358,14 @@
     min-height: 88px;
     resize: vertical;
   }
+
+  /* Запись на прием: сделать все поля как "ФИО" (без градиента) */
+  #patBooking select.input {
+    background: rgba(0, 0, 0, 0.25);
+  }
+  #patBooking input.input[type="date"] {
+    color-scheme: dark;
+  }
   
   .list {
     margin: 0;
