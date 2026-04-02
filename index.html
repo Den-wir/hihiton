@@ -45,7 +45,8 @@
             </div>
             <div class="tabs">
               <button class="tab tab--active" data-tab="docQueue">Очередь</button>
-              
+              <button class="tab" data-tab="docResult">Итог</button>
+              <button class="tab" data-tab="docTemplates">Шаблоны</button>
             </div>
           </div>
 
@@ -113,11 +114,11 @@
                   <div class="card__title">Шаблоны по итогам приема</div>
                 </div>
                 <div class="card__body">
-                  <div class="chips">
-                    <button class="chip2" data-template="template1">ОРВИ (базовый)</button>
-                    <button class="chip2" data-template="template2">Гипертония (контроль)</button>
-                    <button class="chip2" data-template="template3">Гастрит (поддержка)</button>
+                  <div class="field">
+                    <label class="label" for="templateFilter">Фильтр по диагнозу</label>
+                    <input class="input" id="templateFilter" placeholder="Начните вводить диагноз (например: ОРВИ, гастрит...)" />
                   </div>
+                  <div class="chips" id="doctorTemplatesChips"></div>
                   <div class="quote mt" id="templateText">
                     <div class="quote__text">Выберите шаблон, чтобы подставить текст в итог приема.</div>
                   </div>
@@ -328,17 +329,7 @@
                 <div class="card__title">Шаблоны итогов</div>
               </div>
               <div class="card__body">
-                <div class="chips">
-                  <button class="chip2 visit-template" data-template="template1">ОРВИ (базовый)</button>
-                  <button class="chip2 visit-template" data-template="template2">Гипертония (контроль)</button>
-                  <button class="chip2 visit-template" data-template="template3">Гастрит (поддержка)</button>
-                  <button class="chip2 visit-template" data-template="template4">Бронхит (острый)</button>
-                  <button class="chip2 visit-template" data-template="template5">Мигрень</button>
-                  <button class="chip2 visit-template" data-template="template6">Тонзиллит</button>
-                  <button class="chip2 visit-template" data-template="template7">Сахарный диабет 2 типа</button>
-                  <button class="chip2 visit-template" data-template="template8">Поясничная боль</button>
-                  <button class="chip2 visit-template" data-template="template9">Аллергический ринит</button>
-                </div>
+                <div class="chips" id="visitTemplatesChips"></div>
               </div>
             </article>
           </div>
