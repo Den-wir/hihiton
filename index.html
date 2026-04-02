@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MedHihi - Вход по роли</title>
+    <title>MedQueue - Вход по роли</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
@@ -24,7 +24,7 @@
         <div class="brand">
           <div class="brand__logo">M</div>
           <div>
-            <div class="brand__title">MedHihi</div>
+            <div class="brand__title">MedQueue</div>
             <div class="brand__subtitle">Очередь и прием пациентов</div>
           </div>
         </div>
@@ -160,9 +160,20 @@
                       <label class="label" for="doctorName">Врач</label>
                       <select class="input" id="doctorName"></select>
                     </div>
+                    <div class="field hidden" id="therapistVisitTypeWrap">
+                      <label class="label" for="therapistVisitType">Тип приема у терапевта</label>
+                      <select class="input" id="therapistVisitType">
+                        <option value="">Выберите вариант</option>
+                        <option value="primary">Первичный прием</option>
+                        <option value="repeat">Повторный прием</option>
+                        <option value="prescription">Выдача рецепта</option>
+                        <option value="sickLeaveClose">Закрытие больничного</option>
+                        <option value="sickLeaveExtend">Продление больничного</option>
+                      </select>
+                    </div>
                     <div class="field">
                       <label class="label" for="visitDate">День приема</label>
-                      <select class="input" id="visitDate"></select>
+                      <input class="input" id="visitDate" type="date" />
                     </div>
                     <div class="field">
                       <label class="label" for="visitTime">Время приема</label>
@@ -328,7 +339,6 @@
                   <button class="chip2 visit-template" data-template="template8">Поясничная боль</button>
                   <button class="chip2 visit-template" data-template="template9">Аллергический ринит</button>
                 </div>
-                
               </div>
             </article>
           </div>
