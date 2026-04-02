@@ -42,8 +42,202 @@ const visitSummarySlot = document.getElementById("visitSummarySlot");
 const visitEditComplaint = document.getElementById("visitEditComplaint");
 const visitEditHistory = document.getElementById("visitEditHistory");
 const visitEditAllergy = document.getElementById("visitEditAllergy");
+const templateFilter = document.getElementById("templateFilter");
+const doctorTemplatesChips = document.getElementById("doctorTemplatesChips");
+const templateText = document.getElementById("templateText");
+const diagnosis = document.getElementById("diagnosis");
+const recommendations = document.getElementById("recommendations");
+const nextVisit = document.getElementById("nextVisit");
+const visitTemplatesChips = document.getElementById("visitTemplatesChips");
 
 let activeVisitId = null;
+
+const TEMPLATE_CATALOG = [
+  {
+    key: "template1",
+    label: "ОРВИ (базовый)",
+    diagnosis: "ОРВИ",
+    recommendations: "Покой, обильное питье, симптоматическая терапия.",
+    nextVisit: "через 3 дня",
+  },
+  {
+    key: "template2",
+    label: "Гипертония (контроль)",
+    diagnosis: "Артериальная гипертензия",
+    recommendations: "Контроль АД 2 раза в день, коррекция терапии.",
+    nextVisit: "через 14 дней",
+  },
+  {
+    key: "template3",
+    label: "Гастрит (поддержка)",
+    diagnosis: "Хронический гастрит",
+    recommendations: "Щадящая диета, антисекреторная терапия, исключить раздражающие факторы.",
+    nextVisit: "через 10 дней",
+  },
+  {
+    key: "template4",
+    label: "Бронхит (острый)",
+    diagnosis: "Острый бронхит",
+    recommendations: "Теплое питье, симптоматическая терапия, дыхательная гимнастика.",
+    nextVisit: "через 5-7 дней",
+  },
+  {
+    key: "template5",
+    label: "Мигрень",
+    diagnosis: "Мигрень без ауры",
+    recommendations: "Снижение триггеров, режим сна, купирование приступов по схеме, дневник головной боли.",
+    nextVisit: "через 14 дней",
+  },
+  {
+    key: "template6",
+    label: "Тонзиллит",
+    diagnosis: "Острый тонзиллит",
+    recommendations: "Полоскания, щадящий режим, лечение по клинической картине.",
+    nextVisit: "через 5 дней",
+  },
+  {
+    key: "template7",
+    label: "Сахарный диабет 2 типа",
+    diagnosis: "Сахарный диабет 2 типа",
+    recommendations: "Контроль глюкозы, диета с ограничением быстрых углеводов, физическая активность.",
+    nextVisit: "через 14 дней",
+  },
+  {
+    key: "template8",
+    label: "Поясничная боль",
+    diagnosis: "Неспецифическая поясничная боль",
+    recommendations: "Щадящий двигательный режим, ЛФК, противовоспалительная терапия по показаниям.",
+    nextVisit: "через 7 дней",
+  },
+  {
+    key: "template9",
+    label: "Аллергический ринит",
+    diagnosis: "Аллергический ринит",
+    recommendations: "Исключение аллергенов, антигистаминная терапия, промывание носа.",
+    nextVisit: "через 7-10 дней",
+  },
+  {
+    key: "template10",
+    label: "ГЭРБ",
+    diagnosis: "ГЭРБ (гастроэзофагеальная рефлюксная болезнь)",
+    recommendations: "Питание дробно, исключить поздние приемы пищи, терапия по симптомам и показаниям.",
+    nextVisit: "через 14 дней",
+  },
+  {
+    key: "template11",
+    label: "Острый гастроэнтерит",
+    diagnosis: "Острый гастроэнтерит",
+    recommendations: "Регидратация, щадящая диета, симптоматическая терапия. При ухудшении — повторный осмотр.",
+    nextVisit: "через 2-3 дня",
+  },
+  {
+    key: "template12",
+    label: "Цистит",
+    diagnosis: "Острый цистит",
+    recommendations: "Питьевой режим, терапия по клиническим рекомендациям, контроль симптомов.",
+    nextVisit: "через 3-5 дней",
+  },
+  {
+    key: "template13",
+    label: "Отит",
+    diagnosis: "Острый средний отит",
+    recommendations: "Обезболивание, местная терапия по показаниям, контроль динамики.",
+    nextVisit: "через 3 дня",
+  },
+  {
+    key: "template14",
+    label: "Синусит",
+    diagnosis: "Острый риносинусит",
+    recommendations: "Промывание носа, местная терапия, при показаниях — системная терапия. Контроль симптомов.",
+    nextVisit: "через 5 дней",
+  },
+  {
+    key: "template15",
+    label: "Конъюнктивит",
+    diagnosis: "Острый конъюнктивит",
+    recommendations: "Гигиена глаз, местная терапия по клинической картине, контроль симптомов.",
+    nextVisit: "через 3-5 дней",
+  },
+  {
+    key: "template16",
+    label: "Дерматит",
+    diagnosis: "Контактный дерматит",
+    recommendations: "Исключить раздражитель, уход за кожей, местная терапия по показаниям.",
+    nextVisit: "через 7-10 дней",
+  },
+  {
+    key: "template17",
+    label: "Тревожность",
+    diagnosis: "Тревожное расстройство (под вопросом)",
+    recommendations: "Режим сна, снижение кофеина, техники релаксации. При необходимости — консультация специалиста.",
+    nextVisit: "через 14 дней",
+  },
+  {
+    key: "template18",
+    label: "ЖДА",
+    diagnosis: "Железодефицитная анемия (под вопросом)",
+    recommendations: "Обследование по показаниям, коррекция питания, терапия по результатам анализов.",
+    nextVisit: "через 14-21 день",
+  },
+  {
+    key: "template19",
+    label: "Дефицит Vit D",
+    diagnosis: "Дефицит витамина D (под вопросом)",
+    recommendations: "Подбор дозировки после анализа, режим приема, контроль эффективности.",
+    nextVisit: "через 30 дней",
+  },
+  {
+    key: "template20",
+    label: "ГБ напряжения",
+    diagnosis: "Головная боль напряжения",
+    recommendations: "Режим сна, снижение стресса, физическая активность, симптоматическая терапия по показаниям.",
+    nextVisit: "через 14 дней",
+  },
+];
+
+const templatesByKey = Object.fromEntries(TEMPLATE_CATALOG.map((t) => [t.key, t]));
+
+function norm(s) {
+  return (s || "").toString().trim().toLowerCase();
+}
+
+function matchesTemplate(query, template) {
+  const q = norm(query);
+  if (!q) return true;
+  const hay = norm(`${template.label} ${template.diagnosis}`);
+  return hay.includes(q);
+}
+
+function setActiveChip(rootEl, activeBtn) {
+  if (!rootEl) return;
+  rootEl.querySelectorAll(".chip2").forEach((b) => b.classList.remove("chip2--on"));
+  if (activeBtn) activeBtn.classList.add("chip2--on");
+}
+
+function filterChips(rootEl, query) {
+  if (!rootEl) return;
+  rootEl.querySelectorAll(".chip2").forEach((btn) => {
+    const key = btn.dataset.template;
+    const t = templatesByKey[key];
+    const ok = t ? matchesTemplate(query, t) : true;
+    btn.classList.toggle("hidden", !ok);
+  });
+}
+
+function renderTemplateButtons(rootEl, buttonClass, onClick) {
+  if (!rootEl) return;
+  rootEl.innerHTML = "";
+  TEMPLATE_CATALOG.forEach((t) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = `chip2 ${buttonClass}`;
+    btn.dataset.template = t.key;
+    btn.dataset.diagnosis = t.diagnosis;
+    btn.textContent = t.label;
+    btn.addEventListener("click", () => onClick(t, btn));
+    rootEl.appendChild(btn);
+  });
+}
 const doctorsBySpecialty = {
   Терапевт: ["Смирнов А.А.", "Егорова Л.В."],
   Кардиолог: ["Петрова Е.В.", "Волков М.С."],
@@ -107,7 +301,7 @@ function initTabs() {
   const tabGroups = [
     {
       root: document.getElementById("doctorPage"),
-      tabs: ["docQueue"],
+      tabs: ["docQueue", "docResult", "docTemplates", "docSummary"],
     },
     {
       root: document.getElementById("patientPage"),
@@ -372,71 +566,50 @@ function initVisitModal() {
 }
 
 function initVisitTemplates() {
-  const templates = {
-    template1: {
-      diagnosis: "ОРВИ",
-      recommendations: "Покой, обильное питье, симптоматическая терапия.",
-      nextVisit: "через 3 дня",
-    },
-    template2: {
-      diagnosis: "Артериальная гипертензия",
-      recommendations: "Контроль АД 2 раза в день, коррекция терапии.",
-      nextVisit: "через 14 дней",
-    },
-    template3: {
-      diagnosis: "Хронический гастрит",
-      recommendations: "Щадящая диета, антисекреторная терапия, исключить раздражающие факторы.",
-      nextVisit: "через 10 дней",
-    },
-    template4: {
-      diagnosis: "Острый бронхит",
-      recommendations: "Теплое питье, симптоматическая терапия, дыхательная гимнастика.",
-      nextVisit: "через 5-7 дней",
-    },
-    template5: {
-      diagnosis: "Мигрень без ауры",
-      recommendations:
-        "Снижение триггеров, режим сна, купирование приступов по схеме, дневник головной боли.",
-      nextVisit: "через 14 дней",
-    },
-    template6: {
-      diagnosis: "Острый тонзиллит",
-      recommendations: "Полоскания, щадящий режим, лечение по клинической картине.",
-      nextVisit: "через 5 дней",
-    },
-    template7: {
-      diagnosis: "Сахарный диабет 2 типа",
-      recommendations: "Контроль глюкозы, диета с ограничением быстрых углеводов, физическая активность.",
-      nextVisit: "через 14 дней",
-    },
-    template8: {
-      diagnosis: "Неспецифическая поясничная боль",
-      recommendations: "Щадящий двигательный режим, ЛФК, противовоспалительная терапия по показаниям.",
-      nextVisit: "через 7 дней",
-    },
-    template9: {
-      diagnosis: "Аллергический ринит",
-      recommendations: "Исключение аллергенов, антигистаминная терапия, промывание носа.",
-      nextVisit: "через 7-10 дней",
-    },
-  };
-
-  document.querySelectorAll(".visit-template").forEach((button) => {
-    button.addEventListener("click", () => {
-      const key = button.dataset.template;
-      const template = templates[key];
-      if (!template) return;
-      visitDiagnosis.value = template.diagnosis;
-      visitRecommendations.value = template.recommendations;
-      visitNext.value = template.nextVisit || "";
-      if (visitTemplateText) {
-        visitTemplateText.classList.remove("hidden");
-        visitTemplateText.innerHTML = `<div class="quote__text"><strong>Диагноз:</strong> ${template.diagnosis}<br><strong>Рекомендации:</strong> ${template.recommendations}<br><strong>Следующий приём:</strong> ${template.nextVisit || "—"}</div>`;
-      }
-      document.querySelectorAll(".visit-template").forEach((item) => item.classList.remove("chip2--on"));
-      button.classList.add("chip2--on");
-    });
+  renderTemplateButtons(visitTemplatesChips, "visit-template", (template, btn) => {
+    visitDiagnosis.value = template.diagnosis;
+    visitRecommendations.value = template.recommendations;
+    visitNext.value = template.nextVisit || "";
+    if (visitTemplateText) {
+      visitTemplateText.classList.remove("hidden");
+      visitTemplateText.innerHTML = `<div class="quote__text"><strong>Диагноз:</strong> ${template.diagnosis}<br><strong>Рекомендации:</strong> ${template.recommendations}<br><strong>Следующий приём:</strong> ${template.nextVisit || "—"}</div>`;
+    }
+    setActiveChip(visitTemplatesChips, btn);
   });
+
+  if (visitDiagnosis) {
+    visitDiagnosis.addEventListener("input", () => {
+      filterChips(visitTemplatesChips, visitDiagnosis.value);
+    });
+    filterChips(visitTemplatesChips, visitDiagnosis.value);
+  }
+}
+
+function initDoctorTemplates() {
+  renderTemplateButtons(doctorTemplatesChips, "doc-template", (template, btn) => {
+    if (diagnosis) diagnosis.value = template.diagnosis;
+    if (recommendations) recommendations.value = template.recommendations;
+    if (nextVisit) nextVisit.value = template.nextVisit || "";
+    if (templateText) {
+      templateText.classList.remove("hidden");
+      templateText.innerHTML = `<div class="quote__text"><strong>Диагноз:</strong> ${template.diagnosis}<br><strong>Рекомендации:</strong> ${template.recommendations}<br><strong>Следующий приём:</strong> ${template.nextVisit || "—"}</div>`;
+    }
+    setActiveChip(doctorTemplatesChips, btn);
+  });
+
+  if (templateFilter) {
+    templateFilter.addEventListener("input", () => {
+      filterChips(doctorTemplatesChips, templateFilter.value);
+    });
+    filterChips(doctorTemplatesChips, templateFilter.value);
+  }
+
+  if (diagnosis) {
+    diagnosis.addEventListener("input", () => {
+      if (!templateFilter || templateFilter.value.trim()) return;
+      filterChips(doctorTemplatesChips, diagnosis.value);
+    });
+  }
 }
 
 enterDoctor.addEventListener("click", () => setRole("doctor"));
@@ -553,6 +726,7 @@ initSlots();
 initDoctorFilter();
 initVisitModal();
 initVisitTemplates();
+initDoctorTemplates();
 renderDoctorQueue();
 renderPatientQueueState();
 renderPatientResult();
